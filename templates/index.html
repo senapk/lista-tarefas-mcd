@@ -26,17 +26,18 @@
       <h2 id="tasks-heading">Your tasks</h2>
       {% for task in tasks %}
       <article>
+        <p>Task #{{ task.id }}</p>
         <p class="task-text">{{ task.text }}</p>
         <p>Category: {{ task.category }}</p>
         <p>Due date: {% if task.due_date %}<time datetime="{{ task.due_date }}">{{ task.due_date }}</time>{% else %}Data não definida{% endif %}</p>
         <p>Status: {{ 'Done' if task.done else 'Pending' }}</p>
         <div class="task-actions">
           {% if not task.done %}
-          <form action="{{ url_for('complete_task', task_index=loop.index0) }}" method="post">
+          <form action="{{ url_for('complete_task', task_id=task.id) }}" method="post">
             <button type="submit" aria-label="Complete {{ task.text }}">Complete task</button>
           </form>
           {% endif %}
-          <form action="{{ url_for('delete_task', task_index=loop.index0) }}" method="post">
+          <form action="{{ url_for('delete_task', task_id=task.id) }}" method="post">
             <button class="delete" type="submit" aria-label="Delete {{ task.text }}">Delete task</button>
           </form>
         </div>

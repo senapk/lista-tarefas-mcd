@@ -4,21 +4,22 @@ import os
 from flask import Flask, abort, redirect, render_template, request, url_for
 
 from tasks import Task, TaskList
+from task_storage import JsonTaskStorage
 
 
 class TaskWebApp:
     """Connect HTML forms to the task library."""
 
     def __init__(self, task_list: TaskList | None = None) -> None:
-        self.task_list = task_list if task_list is not None else TaskList()
+        self.task_list = task_list if task_list is not None else TaskList(JsonTaskStorage())
         self.app = Flask(__name__)
         self.app.add_url_rule("/", view_func=self.index)
         self.app.add_url_rule("/tasks", view_func=self.add_task, methods=["POST"])
         self.app.add_url_rule(
-            "/tasks/<int:task_index>/delete", view_func=self.delete_task, methods=["POST"]
+            "/tasks/<int:task_id>/delete", view_func=self.delete_task, methods=["POST"]
         )
         self.app.add_url_rule(
-            "/tasks/<int:task_index>/complete", view_func=self.complete_task, methods=["POST"]
+            "/tasks/<int:task_id>/complete", view_func=self.complete_task, methods=["POST"]
         )
 
     def index(self):
@@ -43,18 +44,18 @@ class TaskWebApp:
         self.task_list.add_task(task)
         return redirect(url_for("index"))
 
-    def delete_task(self, task_index: int):
-        tasks = self.task_list.list_tasks()
-        if task_index >= len(tasks):
+    def delete_task(self, task_id: int):
+        try:
+            self.task_list.delete_task(task_id)
+        except KeyError:
             abort(404)
-        self.task_list.delete_task(tasks[task_index])
         return redirect(url_for("index"))
 
-    def complete_task(self, task_index: int):
-        tasks = self.task_list.list_tasks()
-        if task_index >= len(tasks):
+    def complete_task(self, task_id: int):
+        try:
+            self.task_list.complete_task(task_id)
+        except KeyError:
             abort(404)
-        tasks[task_index].complete()
         return redirect(url_for("index"))
 
 

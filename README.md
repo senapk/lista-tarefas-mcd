@@ -58,12 +58,45 @@ stop and restart the Codespace. No automatic reload is enabled.
 
 ## Structure
 
-- `tasks.py`: task models and business logic.
+- `task.py`: the `Task` model.
+- `tasks.py`: `TaskList`, managing tasks by ID and coordinating operations.
+- `task_storage.py`: the `TaskStorage` contract and `JsonTaskStorage`, responsible
+  for JSON serialization, loading, validation, and atomic file writes.
 - `app.py`: `TaskWebApp`, connecting the library to Flask and HTML forms.
 - `main.py`: terminal menu.
 - `templates/index.html`: web page.
 - `static/style.css`: page styles.
 - `pyproject.toml` and `uv.lock`: project dependencies and locked versions.
 
-Tasks are stored in memory and are lost when the program stops. Each running
-interface has its own task list. The web server is intended for local use.
+Tasks are stored by incremental ID in a Python dictionary. Add, complete, and
+delete operations automatically save to `data/tasks.json`. The next ID is also
+saved, so deleted IDs are not reused after a restart. Both interfaces restore
+the saved tasks on startup. The runtime data directory is excluded from Git.
+
+The interfaces assemble the manager with its storage dependency:
+
+```python
+from tasks import TaskList
+from task_storage import JsonTaskStorage
+
+task_list = TaskList(JsonTaskStorage())
+```
+
+`TaskList` works through the `TaskStorage` contract and does not handle JSON or
+file paths. A future storage implementation can supply the same `load` and
+`save` methods without changing task management.
+
+Writes use a temporary file and atomic replacement. An invalid JSON file stops
+startup instead of silently overwriting saved data. Back up the JSON file before
+repairing it if necessary.
+
+Run one server process per JSON file; requests within that process are serialized
+for safe updates. Do not run the terminal interface and server against the same
+file at the same time. Storage survives a server/Codespace restart, but deleting
+the Codespace also deletes its local data unless you back it up separately.
+
+Run the regression tests with:
+
+```bash
+uv run python -m unittest discover -s tests -v
+```

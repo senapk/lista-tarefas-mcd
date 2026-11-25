@@ -1,10 +1,11 @@
 from datetime import date
 
 from tasks import Task, TaskList
+from task_storage import JsonTaskStorage
 
 
 def main() -> None:
-    task_list = TaskList()
+    task_list = TaskList(JsonTaskStorage())
 
     while True:
         print("\n1. Add task\n2. List tasks\n3. Delete task\n0. Exit")
@@ -32,24 +33,25 @@ def main() -> None:
                 print("No tasks registered.")
                 continue
 
-            for number, task in enumerate(tasks, start=1):
+            for task in tasks:
                 status = "Done" if task.done else "Pending"
-                print(f"\n{number}. {task.text}")
+                print(f"\n{task.id}. {task.text}")
                 print(f"   Category: {task.category}")
                 print(f"   Due date: {task.due_date or 'Not defined'} | Status: {status}")
 
             if option == "3":
                 try:
-                    number = int(input("Task number to delete (0 to cancel): "))
+                    number = int(input("Task ID to delete (0 to cancel): "))
                 except ValueError:
-                    print("Enter a valid task number.")
+                    print("Enter a valid task ID.")
                     continue
                 if number == 0:
                     continue
-                if not 1 <= number <= len(tasks):
-                    print("Invalid task number.")
+                try:
+                    task_list.delete_task(number)
+                except KeyError:
+                    print("Task ID not found.")
                     continue
-                task_list.delete_task(tasks[number - 1])
                 print("Task deleted.")
         else:
             print("Invalid option.")
