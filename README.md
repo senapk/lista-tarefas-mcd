@@ -30,6 +30,32 @@ uv run main.py
 
 The terminal menu supports adding, listing, and deleting tasks.
 
+## GitHub Codespaces
+
+Create a Codespace from the repository's **Code > Codespaces** menu.
+The dev container includes Python 3.12 and uv, installs the locked dependencies
+in `.venv`, and starts `app.py` automatically on port 5000. The forwarded port
+opens in the browser. If it does not open, use **Open in Browser** in the
+**Ports** tab for port 5000.
+
+When the editor attaches, the GitHub CLI sets port 5000 to **public** using
+`gh codespace ports visibility`. Anyone with the forwarded URL can access
+the task list, including adding, completing, and deleting tasks.
+If a GitHub permission or organization policy prevents the change, the
+attachment hook reports an error; check the **Visibility** column in **Ports**.
+
+The server also starts when the Codespace is restarted. For an existing
+Codespace, run **Codespaces: Rebuild Container** after adding this configuration.
+Server output is saved in `.devcontainer/.runtime/server.log`.
+To start the server manually if needed:
+
+```bash
+bash .devcontainer/start-server.sh
+```
+
+The start script prevents duplicate instances. To apply Python code changes,
+stop and restart the Codespace. No automatic reload is enabled.
+
 ## Structure
 
 - `tasks.py`: task models and business logic.

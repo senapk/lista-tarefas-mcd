@@ -1,4 +1,5 @@
 from datetime import date
+import os
 
 from flask import Flask, abort, redirect, render_template, request, url_for
 
@@ -58,4 +59,4 @@ class TaskWebApp:
 
 
 if __name__ == "__main__":
-    TaskWebApp().app.run(host="127.0.0.1", port=5000)
+    TaskWebApp().app.run(host=os.environ.get("HOST", "127.0.0.1"), port=5000)
