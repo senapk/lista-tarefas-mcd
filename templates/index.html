@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Task List</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+  <main>
+    <h1>Task List</h1>
+    <section aria-labelledby="add-heading">
+      <h2 id="add-heading">Add a task</h2>
+      {% if error %}<p class="error" role="alert">{{ error }}</p>{% endif %}
+      <form action="{{ url_for('add_task') }}" method="post">
+        <label for="text">Text</label>
+        <textarea id="text" name="text" required>{{ values.get('text', '') }}</textarea>
+        <label for="category">Category</label>
+        <input id="category" name="category" required value="{{ values.get('category', '') }}">
+        <label for="due_date">Due date (optional)</label>
+        <input id="due_date" name="due_date" type="date" value="{{ values.get('due_date', '') }}">
+        <button type="submit">Add task</button>
+      </form>
+    </section>
+    <section aria-labelledby="tasks-heading">
+      <h2 id="tasks-heading">Your tasks</h2>
+      {% for task in tasks %}
+      <article>
+        <p class="task-text">{{ task.text }}</p>
+        <p>Category: {{ task.category }}</p>
+        <p>Due date: {% if task.due_date %}<time datetime="{{ task.due_date }}">{{ task.due_date }}</time>{% else %}Data não definida{% endif %}</p>
+        <p>Status: {{ 'Done' if task.done else 'Pending' }}</p>
+        <div class="task-actions">
+          {% if not task.done %}
+          <form action="{{ url_for('complete_task', task_index=loop.index0) }}" method="post">
+            <button type="submit" aria-label="Complete {{ task.text }}">Complete task</button>
+          </form>
+          {% endif %}
+          <form action="{{ url_for('delete_task', task_index=loop.index0) }}" method="post">
+            <button class="delete" type="submit" aria-label="Delete {{ task.text }}">Delete task</button>
+          </form>
+        </div>
+      </article>
+      {% else %}
+      <p>No tasks registered yet.</p>
+      {% endfor %}
+    </section>
+  </main>
+</body>
+</html>
